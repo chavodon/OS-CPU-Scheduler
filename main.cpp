@@ -165,10 +165,15 @@ void queueAssignment(Process *List, Process *qA, Process *qB, Process *qC, int c
     }
 }
 
-void printQueue(Process *queue, int count){
+void printQueue(Process *queue, int count) {
     int i;
-    for (i = 0; i < count; i++)
-        cout << (queue + i)->getPid() << " " << (queue + i)->getArrival() << " " << (queue + i)->getBurst() << " " << (queue + i)->getRemaining() << " " << (queue + i)->getqueue() << " " << (queue + i)->getExitTime() << " " << (queue + i)->getFirstContact() << " " << (queue + i)->getComplete() << " " << (queue + i)->getContact() << " " << (queue + i)->getPriority() << endl;
+    cout << "PID \t" << "Arrival Time \t" << "Burst Time \t" << "Queue \t" << "Priority \t" << endl; 
+    for (i = 0; i < count; i++) {
+        cout << (queue + i)->getPid() << "\t    " << (queue + i)->getArrival() << "\t\t    " << (queue + i)->getBurst() << "\t\t  " << (queue + i)->getqueue() << "\t";
+        if ((queue + i)->getPriority() > 0)
+            cout << "    " << (queue + i)->getPriority();
+        cout << "\n";
+    }
 }
 
 
@@ -189,44 +194,46 @@ void displayTime(int increase) {
 
 int roundRobin(Process *qA, int count) {
 	int flag = 0;
-    if ((qA + roundToServe)->getRemaining() > 0) {
-        flag = 1;
-        if ((qA + roundToServe)->getBurst() == (qA + roundToServe)->getRemaining()) {
-            (qA + roundToServe)->setFirstContact(timeElapsed);
-            (qA + roundToServe)->setContact(true);
-        }			
-        if ((qA + roundToServe)->getRemaining() <= quantum){
-            (qA + roundToServe)->setComplete(true);
-            (qA + roundToServe)->setExitTime(timeElapsed + (qA + roundToServe)->getRemaining());                
-            displayTime((qA + roundToServe)->getRemaining());
-            (qA + roundToServe)->setRemaining(0);
-            rRComplete++;
-            processesCompleted++;
-            refreshCompletedProcess();
-            if (rRComplete == count)
-                return flag;
-        } else {
-            displayTime(quantum);
-            int remainder = (qA + roundToServe)->getRemaining() - quantum;
-            (qA + roundToServe)->setRemaining(remainder);            
-        }	                         	        		        
-        if (roundToServe == count-1)
-            roundToServe = 0;
-        else
-            roundToServe++; 
-            
-        while ((qA + roundToServe)->getRemaining() == 0) {
-            if (rRComplete == count) {
-                flag = 0;
-                break;
+    if ((qA + roundToServe)->getArrival() <= timeElapsed) {
+        if ((qA + roundToServe)->getRemaining() > 0) {
+            flag = 1;
+            if ((qA + roundToServe)->getBurst() == (qA + roundToServe)->getRemaining()) {
+                (qA + roundToServe)->setFirstContact(timeElapsed);
+                (qA + roundToServe)->setContact(true);
+            }			
+            if ((qA + roundToServe)->getRemaining() <= quantum){
+                (qA + roundToServe)->setComplete(true);
+                (qA + roundToServe)->setExitTime(timeElapsed + (qA + roundToServe)->getRemaining());                
+                displayTime((qA + roundToServe)->getRemaining());
+                (qA + roundToServe)->setRemaining(0);
+                rRComplete++;
+                processesCompleted++;
+                refreshCompletedProcess();
+                if (rRComplete == count)
+                    return flag;
             } else {
-                if (roundToServe == count-1)
-                    roundToServe = 0;
-                else
-                    roundToServe++; 
-            } 					 	
-        }            	
-    }														        	
+                displayTime(quantum);
+                int remainder = (qA + roundToServe)->getRemaining() - quantum;
+                (qA + roundToServe)->setRemaining(remainder);            
+            }	                         	        		        
+            if (roundToServe == count-1)
+                roundToServe = 0;
+            else
+                roundToServe++; 
+                
+            while ((qA + roundToServe)->getRemaining() == 0) {
+                if (rRComplete == count) {
+                    flag = 0;
+                    break;
+                } else {
+                    if (roundToServe == count-1)
+                        roundToServe = 0;
+                    else
+                        roundToServe++; 
+                } 					 	
+            }            	
+        }	
+    }													        	
     return flag;       
 }
 
@@ -418,5 +425,7 @@ int main() {
     cout << "\nAverage Turnaround: " << avgTurnTime;
     cout << "\nAverage Waiting: " << avgWaitTime;
     cout << "\nAverage Response: " << avgResponseTime;
+    cout << "\n\n(Note: Queues numbered 1, 2 and 3 represent Round Robin, NPP and SJF respectively.";
+    cout << "\n(Note: Only processes belonging to Queue 2 will have a priority to display.";
     return 0;
 }
